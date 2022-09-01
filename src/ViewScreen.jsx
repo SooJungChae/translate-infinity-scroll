@@ -1,9 +1,12 @@
 import React from 'react';
+import './ViewScreen.css';
+import Content from "./Content";
 
 const ViewScreen = () => {
   return (
-    <div>
+    <div className={'view-screen'}>
       view screen
+      <Content />
     </div>
   );
 };

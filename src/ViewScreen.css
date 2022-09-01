@@ -1,0 +1,7 @@
+.view-screen {
+    position: absolute;
+    border: 1px solid red;
+    width: 100%;
+    /*top: calc(50% - 250px);*/
+    /*height: 500px;*/
+}

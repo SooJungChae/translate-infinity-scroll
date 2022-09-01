@@ -1,12 +1,11 @@
 import React from 'react';
 import './ChatRoom.css';
-import ScrollContent from "./ScrollContent";
+import Content from "./Content";
 import ViewScreen from "./ViewScreen";
 
 const MyComponent = () => {
   return (
     <div className={'chat-room'}>
-      <ScrollContent />
       <ViewScreen />
     </div>
   );
