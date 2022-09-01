@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import './ViewScreen.css';
 import Content from "./Content";
 
 const ViewScreen = () => {
+  const viewScreen = useRef(null);
+  
   return (
-    <div className={'view-screen'}>
-      view screen
-      <Content />
+    <div id={'viewScreen'} className={'view-screen'} ref={viewScreen}>
+      <Content viewScreenRef={viewScreen} />
     </div>
   );
 };

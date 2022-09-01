@@ -1,6 +1,5 @@
 import React from 'react';
 import './ChatRoom.css';
-import Content from "./Content";
 import ViewScreen from "./ViewScreen";
 
 const MyComponent = () => {
