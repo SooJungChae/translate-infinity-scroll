@@ -1,14 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './Content.css';
 
-let translateY = 0;
+let contentY = 0;
 
 const Content = (props) => {
+  const requestRef = useRef(null);
+  const contentHeightRef = useRef(0);
   const contentWrapper = useRef(null);
   const start = useRef(null);
   const end = useRef(null);
   const [chats, setChats] = useState([]);
-  const [contentHeight, setContentHeight] = useState(0);
+  // const [contentHeight, setContentHeight] = useState(0);
   
   const getMessages = () => {
     return Array.from({ length: 30 }).map((_, index) => `chat ${index}`);
@@ -16,10 +18,20 @@ const Content = (props) => {
   
   useEffect(() => {
     setChats(getMessages());
+    // requestRef.current = requestAnimationFrame(wheel);
+    //
+    // return () => {
+    //   cancelAnimationFrame(requestRef.current);
+    // }
   }, [])
   
   useEffect(() => {
-    setContentHeight(contentWrapper.current.getBoundingClientRect().height);
+    const h = contentWrapper.current.getBoundingClientRect().height;
+    // setContentHeight.(h);
+    contentHeightRef.current = h;
+    // console.log(h);
+    // scrollUp(contentWrapper.current.getBoundingClientRect().height);
+    // contentWrapper.current.style.transform = `translate3d(0, -${h - 500}px, 0)`;
   }, [chats]);
   
   useEffect(() => {
@@ -27,10 +39,9 @@ const Content = (props) => {
       const target = entry.target;
       const bounding = entry.boundingClientRect;
   
-      console.log('intersect', target);
-  
       if (target.id === 'contentWrapper') {
-        setContentHeight(bounding.height);
+        // setContentHeight(bounding.height);
+        contentHeightRef.current = bounding.height;
       }
   
       if (target.id === 'start') {
@@ -54,30 +65,48 @@ const Content = (props) => {
     // observer.observe(props.viewScreenRef.current);
     observer.observe(contentWrapper.current);
     observer.observe(start.current);
-    observer.observe(end.current);
+    // observer.observe(end.current);
   }, [props.viewScreenRef, contentWrapper, start, end]);
   
   const scrollUp = (value) => {
-    if (translateY < -(contentHeight - 500)) return;
+    // 최대 길이를 넘어서 위로 올릴 수 없다.
+    if (contentY + value < -(contentHeightRef.current - 500)) return;
   
-    translateY += value;
-    contentWrapper.current.style.transform = `translate3d(0, ${translateY}px, 0)`;
+    contentY += value;
+    contentWrapper.current.style.transform = `translate3d(0, ${contentY}px, 0)`;
   }
   
   const scrollDown = (value) => {
-    if (0 < translateY) return;
+    if (0 < contentY + value) return;
     
-    translateY += value;
-    contentWrapper.current.style.transform = `translate3d(0, ${translateY}px, 0)`;
+    contentY += value;
+    contentWrapper.current.style.transform = `translate3d(0, ${contentY}px, 0)`;
   }
   
-  const handleOnWheel = (e) => {
+  const wheel = (e) => {
+    if (e.deltaY === undefined) return;
+    
     if (e.deltaY < 0) {
       scrollUp(e.deltaY);
     } else {
       scrollDown(e.deltaY);
     }
+    
+    if (e.deltaY) {
+      requestRef.current = requestAnimationFrame(wheel);
+    }
   };
+  
+  const handleOnWheel = useCallback(
+    (e) => {
+      requestRef.current = requestAnimationFrame(() => wheel(e));
+  
+      return () => {
+        cancelAnimationFrame(requestRef.current);
+      }
+    },
+    [],
+  );
   
   return (
     <div onWheel={handleOnWheel}>
