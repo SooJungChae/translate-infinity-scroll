@@ -2,7 +2,7 @@
     border: 1px solid blue;
     will-change: transform;
     transform: translate3d(0, 0, 0);
-    transition: all linear 500ms 0s;
+    transition: all linear 300ms 0s;
 }
 
 .content li {

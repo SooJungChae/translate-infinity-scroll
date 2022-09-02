@@ -5,6 +5,10 @@ import './Content.css';
 
 const ViewScreen = () => {
   const viewScreen = useRef(null);
+  const viewScreenHeight = useRef(null);
+  const scrollbarThumb = useRef(null);
+  const scrollbarThumbHeight = useRef(null);
+  const ratioRef = useRef(null);
   const [chats, setChats] = useState([]);
   const requestRef = useRef(null);
   const contentYRef = useRef(0);
@@ -15,11 +19,19 @@ const ViewScreen = () => {
   const end = useRef(null);
   
   useEffect(() => {
+    viewScreenHeight.current = viewScreen.current.getBoundingClientRect().height;
+  }, [viewScreen])
+  
+  useEffect(() => {
     const bounding = contentWrapper.current.getBoundingClientRect();
+    
     originalContentHeightRef.current = contentHeightRef.current;
     contentHeightRef.current = bounding.height;
+    scrollbarThumbHeight.current = scrollbarThumb.current.getBoundingClientRect().height;
+    ratioRef.current = Math.floor(contentHeightRef.current / viewScreenHeight.current);
   
-    console.log(originalContentHeightRef.current, contentHeightRef.current);
+  
+    console.log('ratioRef.current', ratioRef.current);
     
     // 맨 처음 로드
     if (chats.length <= 5) {
@@ -28,16 +40,9 @@ const ViewScreen = () => {
       // contentWrapper.current.style.transform = `translate3d(0, ${contentYRef.current}px, 0)`;
       // contentWrapper.current.style.transition = `none`;
     } else {
-      console.log('load more')
       const newY = contentHeightRef.current - originalContentHeightRef.current;
-      // contentYRef.current = tempContentYRef.current;
-      // contentWrapper.current.style.transition = 'all ease 500ms 0s';
-      // contentWrapper.current.style.transform = `translate3d(0, ${tempContentYRef.current}px, 0)`;
-      contentWrapper.current.style.transform = `translate3d(0, -${newY}px, 0)`;
-    }
-    // contentWrapper.current.style.transform = `translate3d(0, -${wrapperHeight - 500}px, 0)`;
-    // 바로 내려서 보여주려고
-    // contentWrapper.current.style.transition = `none`;
+      scrollContentWrapperTo(-newY, 'none');
+    };
   }, [chats]);
   
   useEffect(() => {
@@ -83,11 +88,24 @@ const ViewScreen = () => {
     console.log('detect start', start);
   }, [start])
   
+  const scrollContentWrapperTo = (value, transition) => {
+    contentYRef.current = value;
+    contentWrapper.current.style.transform = `translate3d(0, ${value}px, 0)`;
+    contentWrapper.current.style.transition = transition || `all linear 500ms 0s`;
+  };
+  
+  const scrollScrollbarThumbTo = (value, transition) => {
+    scrollbarThumb.current.style.transform = `translate3d(0, ${value}px, 0)`;
+    scrollbarThumb.current.style.transition = transition || `all linear 500ms 0s`;
+  };
+  
   const scrollUp = (value) => {
     if (0 < contentYRef.current + value) return;
     
-    contentYRef.current += value;
-    contentWrapper.current.style.transform = `translate3d(0, ${contentYRef.current}px, 0)`;
+    scrollContentWrapperTo(contentYRef.current + value);
+    
+    const scrollY = Math.floor(contentYRef.current / ratioRef.current);
+    scrollScrollbarThumbTo(-scrollY);
   }
   
   const scrollDown = (value) => {
@@ -96,8 +114,10 @@ const ViewScreen = () => {
     // 최대 길이를 넘어서 밑으로 내릴 수 없다.
     if (contentYRef.current + value < contentWrapperY) return;
     
-    contentYRef.current += value;
-    contentWrapper.current.style.transform = `translate3d(0, ${contentYRef.current}px, 0)`;
+    scrollContentWrapperTo(contentYRef.current + value);
+  
+    const scrollY = Math.floor(contentYRef.current / ratioRef.current);
+    scrollScrollbarThumbTo(-scrollY);
   }
   
   const wheel = (e) => {
@@ -127,7 +147,7 @@ const ViewScreen = () => {
   );
   
   const getMessages = () => {
-    return Array.from({ length: 5 }).map((_, index) => `chat ${index}`);
+    return Array.from({ length: 3 }).map((_, index) => `chat ${index}`);
   };
   
   
@@ -148,12 +168,15 @@ const ViewScreen = () => {
       <button onClick={getPrev}>get prev</button>
     <div id={'viewScreen'} className={'view-screen'} ref={viewScreen}>
       {/*<Content viewScreenRef={viewScreen} chats={chats} getPrev={getPrev} getNext={getNext} />*/}
-      <div onWheel={handleOnWheel}>
+      <div className={'wheel-element'} onWheel={handleOnWheel}>
         <ul id={'contentWrapper'} className={'content'} ref={contentWrapper}>
-          <div id={'start'} ref={start} style={{ display: chats.length >= 5 ? 'block': 'none'}}>Start</div>
+          <div id={'start'} ref={start}>Start</div>
           {chats.map((chat, i) => <li key={`chat-${i}`} style={{ margin: '10px', background: `hsla(${i * 30}, 60%, 80%, 1)`}}>{chat}</li>)}
           <div id={'end'} ref={end}>End</div>
         </ul>
+      </div>
+      <div className={'scrollbar'}>
+        <div className="scrollbar-thumb" ref={scrollbarThumb}></div>
       </div>
     </div>
     </>
