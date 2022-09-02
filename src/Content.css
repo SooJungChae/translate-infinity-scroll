@@ -2,5 +2,11 @@
     border: 1px solid blue;
     will-change: transform;
     transform: translate3d(0, 0, 0);
-    transition: all ease 200ms 0s;
+    transition: all linear 500ms 0s;
+}
+
+.content li {
+    border: 1px solid gray;
+    border-radius: 5px;
+    padding: 10rem 1rem;
 }
