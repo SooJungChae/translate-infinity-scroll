@@ -1,16 +1,14 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './Content.css';
 
-let contentY = 0;
-
 const Content = (props) => {
   const requestRef = useRef(null);
+  const contentYRef = useRef(0);
   const contentHeightRef = useRef(0);
   const contentWrapper = useRef(null);
   const start = useRef(null);
   const end = useRef(null);
   const [chats, setChats] = useState([]);
-  // const [contentHeight, setContentHeight] = useState(0);
   
   const getMessages = () => {
     return Array.from({ length: 30 }).map((_, index) => `chat ${index}`);
@@ -18,20 +16,15 @@ const Content = (props) => {
   
   useEffect(() => {
     setChats(getMessages());
-    // requestRef.current = requestAnimationFrame(wheel);
-    //
-    // return () => {
-    //   cancelAnimationFrame(requestRef.current);
-    // }
   }, [])
   
   useEffect(() => {
-    const h = contentWrapper.current.getBoundingClientRect().height;
-    // setContentHeight.(h);
-    contentHeightRef.current = h;
-    // console.log(h);
-    // scrollUp(contentWrapper.current.getBoundingClientRect().height);
-    // contentWrapper.current.style.transform = `translate3d(0, -${h - 500}px, 0)`;
+    const wrapperHeight = contentWrapper.current.getBoundingClientRect().height;
+    
+    contentHeightRef.current = wrapperHeight;
+    contentWrapper.current.style.transform = `translate3d(0, -${wrapperHeight - 500}px, 0)`;
+    // 바로 내려서 보여주려고
+    contentWrapper.current.style.transition = `none`;
   }, [chats]);
   
   useEffect(() => {
@@ -70,17 +63,18 @@ const Content = (props) => {
   
   const scrollUp = (value) => {
     // 최대 길이를 넘어서 위로 올릴 수 없다.
-    if (contentY + value < -(contentHeightRef.current - 500)) return;
+    if (contentYRef.current + value < -(contentHeightRef.current - 500)) return;
   
-    contentY += value;
-    contentWrapper.current.style.transform = `translate3d(0, ${contentY}px, 0)`;
+    contentYRef.current += value;
+    contentWrapper.current.style.transform = `translate3d(0, ${contentYRef.current}px, 0)`;
   }
   
   const scrollDown = (value) => {
-    if (0 < contentY + value) return;
+    console.log('down', contentYRef.current, value);
+    if (0 < contentYRef.current + value) return;
     
-    contentY += value;
-    contentWrapper.current.style.transform = `translate3d(0, ${contentY}px, 0)`;
+    contentYRef.current += value;
+    contentWrapper.current.style.transform = `translate3d(0, ${contentYRef.current}px, 0)`;
   }
   
   const wheel = (e) => {
