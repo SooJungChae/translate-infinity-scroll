@@ -7,6 +7,7 @@ const ViewScreen = () => {
   const viewScreen = useRef(null);
   const viewScreenHeight = useRef(null);
   const scrollbarThumb = useRef(null);
+  const scrollbarThumbY = useRef(0);
   const scrollbarThumbHeight = useRef(null);
   const ratioRef = useRef(null);
   const [chats, setChats] = useState([]);
@@ -28,7 +29,7 @@ const ViewScreen = () => {
     originalContentHeightRef.current = contentHeightRef.current;
     contentHeightRef.current = bounding.height;
     scrollbarThumbHeight.current = scrollbarThumb.current.getBoundingClientRect().height;
-    ratioRef.current = Math.floor(contentHeightRef.current / viewScreenHeight.current);
+    ratioRef.current = (contentHeightRef.current / viewScreenHeight.current).toFixed(3);
   
   
     console.log('ratioRef.current', ratioRef.current);
@@ -89,35 +90,64 @@ const ViewScreen = () => {
   }, [start])
   
   const scrollContentWrapperTo = (value, transition) => {
-    contentYRef.current = value;
+    // contentYRef.current = value;
     contentWrapper.current.style.transform = `translate3d(0, ${value}px, 0)`;
     contentWrapper.current.style.transition = transition || `all linear 500ms 0s`;
   };
   
   const scrollScrollbarThumbTo = (value, transition) => {
+    // if (value < 0) return;
+    
+    // scrollbarThumbY.current = value;
     scrollbarThumb.current.style.transform = `translate3d(0, ${value}px, 0)`;
-    scrollbarThumb.current.style.transition = transition || `all linear 500ms 0s`;
+    // scrollbarThumb.current.style.transition = transition || `all linear 500ms 0s`;
   };
   
   const scrollUp = (value) => {
-    if (0 < contentYRef.current + value) return;
+    // return;
+    const scrollUpValue = scrollbarThumbY.current + value;
+    if (scrollUpValue < 0) return;
     
-    scrollContentWrapperTo(contentYRef.current + value);
+    scrollbarThumbY.current = scrollUpValue;
+    scrollScrollbarThumbTo(scrollUpValue);
+  
+    console.log('up', scrollUpValue * ratioRef.current);
+  
+    // console.log('scroll up', scrollUpValue);
     
-    const scrollY = Math.floor(contentYRef.current / ratioRef.current);
-    scrollScrollbarThumbTo(-scrollY);
+    // // if (0 < contentYRef.current + value) return;
+    //
+    // // scrollContentWrapperTo(contentYRef.current + value);
+    // scrollContentWrapperTo(contentYRef.current + value * ratioRef.current);
+    
+    // const scrollY = Math.floor(contentYRef.current / ratioRef.current);
   }
   
   const scrollDown = (value) => {
-    const contentWrapperY = -(contentHeightRef.current - 500);
-    
-    // 최대 길이를 넘어서 밑으로 내릴 수 없다.
-    if (contentYRef.current + value < contentWrapperY) return;
-    
-    scrollContentWrapperTo(contentYRef.current + value);
+    const scrollDownValue = scrollbarThumbY.current + value;
   
-    const scrollY = Math.floor(contentYRef.current / ratioRef.current);
-    scrollScrollbarThumbTo(-scrollY);
+    // 최대 길이를 넘어서 밑으로 내릴 수 없다.
+    if (viewScreenHeight.current - scrollbarThumbHeight.current < scrollDownValue) return;
+    
+    scrollbarThumbY.current = scrollDownValue;
+    scrollScrollbarThumbTo(scrollDownValue);
+  
+    console.log('down', scrollDownValue);
+  
+    // if (viewScreenHeight.current < -scrollbarThumbMaxY) return;
+    // scrollbarThumbY.current += value;
+    // const scrollY = scrollbarThumbY.current;
+    // scrollScrollbarThumbTo(-scrollY);
+    //
+    // const contentWrapperY = -(contentHeightRef.current - 500);
+    //
+    //
+    // // if (contentYRef.current + value < contentWrapperY) return;
+    // //
+    // scrollContentWrapperTo(contentYRef.current + value * ratioRef.current);
+    //
+    // // const scrollY = Math.floor(contentYRef.current / ratioRef.current);
+    // // const scrollY = contentYRef.current / ratioRef.current;
   }
   
   const wheel = (e) => {
@@ -125,9 +155,9 @@ const ViewScreen = () => {
     
     // 컨텐츠를 반대로 이동시켜줘야 하기 때문에 - 값으로 처리해야한다.
     if (e.deltaY < 0) {
-      scrollUp(-e.deltaY);
+      scrollUp(e.deltaY);
     } else {
-      scrollDown(-e.deltaY);
+      scrollDown(e.deltaY);
     }
     
     if (e.deltaY) {
@@ -166,6 +196,7 @@ const ViewScreen = () => {
   return (
     <>
       <button onClick={getPrev}>get prev</button>
+      {ratioRef.current}
     <div id={'viewScreen'} className={'view-screen'} ref={viewScreen}>
       {/*<Content viewScreenRef={viewScreen} chats={chats} getPrev={getPrev} getNext={getNext} />*/}
       <div className={'wheel-element'} onWheel={handleOnWheel}>

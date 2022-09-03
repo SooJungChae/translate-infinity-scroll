@@ -22,6 +22,6 @@
     height: 30%;
     background: #217af4;
     border-radius: 10px;
-    transform: translate3d(0, 50%, 0);
+    transform: translate3d(0, 0, 0);
     transition: all linear 500ms 0s;
 }
