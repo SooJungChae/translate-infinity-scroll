@@ -4,6 +4,7 @@ import './Content.css';
 // import Content from "./Content";
 
 const ViewScreen = () => {
+  const MIN_CHAT_SIZE = 5;
   const viewScreen = useRef(null);
   const viewScreenHeight = useRef(null);
   const scrollbarThumb = useRef(null);
@@ -11,6 +12,7 @@ const ViewScreen = () => {
   const scrollbarThumbHeight = useRef(null);
   const ratioRef = useRef(null);
   const [chats, setChats] = useState([]);
+  const [thumbHeight, setThumbHeight] = useState(100);
   const requestRef = useRef(null);
   const contentYRef = useRef(0);
   const contentHeightRef = useRef(0);
@@ -18,6 +20,15 @@ const ViewScreen = () => {
   const contentWrapper = useRef(null);
   const start = useRef(null);
   const end = useRef(null);
+  
+  const getScrollbarThumbHeight = () => {
+    let thumbHeight = scrollbarThumb.current.getBoundingClientRect().height;
+  
+    if (chats.length < MIN_CHAT_SIZE) return thumbHeight;
+    
+    const newThumbHeight = thumbHeight / chats.length;
+    return newThumbHeight < 25 ? 25 : newThumbHeight;
+  };
   
   useEffect(() => {
     viewScreenHeight.current = viewScreen.current.getBoundingClientRect().height;
@@ -28,11 +39,17 @@ const ViewScreen = () => {
     
     originalContentHeightRef.current = contentHeightRef.current;
     contentHeightRef.current = bounding.height;
-    scrollbarThumbHeight.current = scrollbarThumb.current.getBoundingClientRect().height;
+  
+    const thumbHeight = getScrollbarThumbHeight();
+    scrollbarThumbHeight.current = thumbHeight;
+    // scrollbarThumb.current.clientHeight = thumbHeight + 'px';
+    setThumbHeight(thumbHeight);
+    // console.log('thumbHeight', thumbHeight);
+    
     ratioRef.current = ((contentHeightRef.current - viewScreenHeight.current) / (viewScreenHeight.current - scrollbarThumbHeight.current)).toFixed(3);
   
     // 맨 처음 로드
-    if (chats.length <= 5) {
+    if (chats.length <= MIN_CHAT_SIZE) {
       console.log('init');
       // contentYRef.current = -(contentWrapperHeight - 500);
       // contentWrapper.current.style.transform = `translate3d(0, ${contentYRef.current}px, 0)`;
@@ -209,7 +226,7 @@ const ViewScreen = () => {
         </ul>
       </div>
       <div className={'scrollbar'}>
-        <div className="scrollbar-thumb" ref={scrollbarThumb}></div>
+        <div className="scrollbar-thumb" ref={scrollbarThumb} style={{ height: thumbHeight }}></div>
       </div>
     </div>
     </>

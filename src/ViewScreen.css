@@ -19,9 +19,9 @@
 }
 
 .scrollbar-thumb {
-    height: 30%;
+    height: 100px;
     background: #217af4;
     border-radius: 10px;
     transform: translate3d(0, 0, 0);
-    transition: all linear 500ms 0s;
+    transition: transform linear 500ms 0s;
 }
