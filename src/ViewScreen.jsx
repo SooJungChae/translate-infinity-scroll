@@ -29,11 +29,8 @@ const ViewScreen = () => {
     originalContentHeightRef.current = contentHeightRef.current;
     contentHeightRef.current = bounding.height;
     scrollbarThumbHeight.current = scrollbarThumb.current.getBoundingClientRect().height;
-    ratioRef.current = (contentHeightRef.current / viewScreenHeight.current).toFixed(3);
+    ratioRef.current = ((contentHeightRef.current - viewScreenHeight.current) / (viewScreenHeight.current - scrollbarThumbHeight.current)).toFixed(3);
   
-  
-    console.log('ratioRef.current', ratioRef.current);
-    
     // 맨 처음 로드
     if (chats.length <= 5) {
       console.log('init');
@@ -104,15 +101,16 @@ const ViewScreen = () => {
   };
   
   const scrollUp = (value) => {
-    // return;
     const scrollUpValue = scrollbarThumbY.current + value;
     if (scrollUpValue < 0) return;
     
     scrollbarThumbY.current = scrollUpValue;
     scrollScrollbarThumbTo(scrollUpValue);
   
-    console.log('up', scrollUpValue * ratioRef.current);
-  
+    const y = scrollUpValue * ratioRef.current;
+    contentYRef.current = -y;
+    // scrollContentWrapperTo(y * ratioRef.current);
+    scrollContentWrapperTo(-y);
     // console.log('scroll up', scrollUpValue);
     
     // // if (0 < contentYRef.current + value) return;
@@ -132,7 +130,11 @@ const ViewScreen = () => {
     scrollbarThumbY.current = scrollDownValue;
     scrollScrollbarThumbTo(scrollDownValue);
   
-    console.log('down', scrollDownValue);
+    const y = scrollDownValue * ratioRef.current;
+    console.log('down', y);
+    contentYRef.current = -y;
+    
+    scrollContentWrapperTo(-y);
   
     // if (viewScreenHeight.current < -scrollbarThumbMaxY) return;
     // scrollbarThumbY.current += value;
